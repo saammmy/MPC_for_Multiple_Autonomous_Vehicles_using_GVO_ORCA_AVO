@@ -1,0 +1,34 @@
+EXAMPLE 2:
+    Start_A = [0.0, 0.0, 45.0, 0.0]
+    Goal_A = [20.0, 20.0, 45.0, 0.0]
+    inital_control_input_A=[2.0,0.0]
+    inital_control_input_B=[0.0,0.0]
+    # Length of the Vehicle
+        self.length = 0.1
+        self.size = 1
+    
+    OBSTACLES:
+    # Obstacles
+    self.offset = 7
+    self.dynamic_offset = 10
+    self.obstacles = [[0,10,0.5],[10,0,0.5],[10,20,0.5],[20,10,0.5],[10,10,0.5]]
+    self.dynamic_obstacles=[[5,0,0.25,90*np.pi/180,0.5],[0,5,0.25,0*np.pi/180,0.5],[0,15,0.25,0*np.pi/180,0.5],[15,20,0.4,-90*np.pi/180,0.5]]
+
+    WEIGHTS:
+    Total Cost
+    W1=1
+    W2=1
+    W3=10
+    W4=1000
+    W5=1000
+    Goal Cost:
+    W1 = 1
+    W2 = 1
+    W3 = 0
+    Constraint Cost:
+    W1 = 1
+    W2 = 1
+    W3 = 1
+    W4 = 5  
+    Rest cost weight = 1
+
