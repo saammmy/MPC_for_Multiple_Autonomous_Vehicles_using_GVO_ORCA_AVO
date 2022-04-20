@@ -1,4 +1,3 @@
-from turtle import pos
 from PIL import Image
 import autograd.numpy as np
 from autograd import grad
@@ -76,8 +75,12 @@ class Vehicle:
         # History of the Vehicle
         self.state_history = [[x_start, y_start, theta_start, delta_start]]
         self.state_history.append([x_start, y_start, theta_start, delta_start])
+
+        self.virtual_state_history = [[x_start, y_start, theta_start, delta_start]]
+
         self.time_history = [start_time]
         self.time_history.append(start_time)
+        
         self.control_input_history = [[initial_v, inital_phi]]
         self.control_input_history.append([initial_v, inital_phi])
 
@@ -127,7 +130,7 @@ class Vehicle:
             self.time_history.append(self.time)
             
         else:
-            self.virtual_state = state   
+            self.virtual_state = state
         
 
     def goal_reach_cost(self):
@@ -171,9 +174,9 @@ class Vehicle:
                 radius = obstacle.parameters[2]
             else:
                 if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
-                    other_vehicle_state = obstacle.state_history[-2]
-                else:
                     other_vehicle_state = obstacle.state_history[-1]
+                else:
+                    other_vehicle_state = obstacle.state_history[-2]
                 obs_x = other_vehicle_state[0]
                 obs_y = other_vehicle_state[1]
                 radius = obstacle.size/2
@@ -202,9 +205,9 @@ class Vehicle:
                 obs_y = obstacle.parameters[1]
             else:
                 if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
-                    other_vehicle_state = obstacle.state_history[-2]
-                else:
                     other_vehicle_state = obstacle.state_history[-1]
+                else:
+                    other_vehicle_state = obstacle.state_history[-2]
                 obs_x = other_vehicle_state[0]
                 obs_y = other_vehicle_state[1]
                 # print("X=",obs_x)
@@ -242,7 +245,7 @@ class Vehicle:
         delta=self.state[3]
     
         self.virtual_state = [x,y,theta,delta]
-        
+        self.virtual_state_history = []
         # Calculating cost across the prediction horizon
         for i in range(self.prediction_horizon):
             # Weights
@@ -262,6 +265,11 @@ class Vehicle:
             
             # Update the virtual state to next prediction horizon
             self.bicycle_model(virtual_input[0],virtual_input[1])
+            x=self.virtual_state[0]
+            y=self.virtual_state[1]
+            theta=self.virtual_state[2]
+            delta=self.virtual_state[3]
+            self.virtual_state_history.append([x, y, theta, delta])
         
         return total_cost
 
@@ -274,7 +282,7 @@ class Vehicle:
         # Performing Optimization using RMS Prop
         for _ in range(iteration):
             cost_gradient = np.asarray(gradient(virtual_input))
-            mean_square_gradient = (0.9*mean_square_gradient) + 0.1 * (cost_gradient**2)
+            mean_square_gradient = (decay * mean_square_gradient) + (1-decay) * (cost_gradient**2)
             virtual_input = virtual_input - (learning_rate/((mean_square_gradient)**0.5+eps))*cost_gradient
         
         # Assigning the optimized virtual input to vehicle
@@ -299,15 +307,17 @@ class Vehicle:
             vehicle_photo = AnnotationBbox(OffsetImage(img, zoom= self.ZOOM), (self.state[0], self.state[1]), frameon=False)
             ax.add_artist(vehicle_photo)
 
+        virtual_states = plt.scatter(np.array(self.virtual_state_history)[:,0]._value, np.array(self.virtual_state_history)[:,1]._value, edgecolor = 'black' ,color = self.COLOR)
+
         dynamic_region = plt.Circle((self.state[0], self.state[1]),self.dynamic_offset/2, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.1)
         static_region = plt.Circle((self.state[0], self.state[1]),self.static_offset/2, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.3)
         ax.add_artist(static_region)
         ax.add_artist(dynamic_region)
          
-        arrow = plt.arrow(self.state[0], self.state[1], 4*np.cos(self.state[2]), 4*np.sin(self.state[2]), width = 0.5, facecolor= self.COLOR, edgecolor='black')
+        arrow = plt.arrow(self.state[0], self.state[1], 3*np.cos(self.state[2]), 3*np.sin(self.state[2]), width = 0.3, facecolor= self.COLOR, edgecolor='black')
         plt.plot(np.array(self.state_history)[:,0], np.array(self.state_history)[:,1], color = self.COLOR)
 
         plt.plot(self.start[0],self.start[1], marker='*',  markersize=20, color = self.COLOR, markeredgecolor='black')
         plt.plot(self.goal[0],self.goal[1], marker='D',  markersize=20, color = self.COLOR, markeredgecolor='black')
 
-        return vehicle, arrow, vehicle_photo, static_region, dynamic_region
+        return vehicle, virtual_states, arrow, vehicle_photo, static_region, dynamic_region

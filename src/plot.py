@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def plot_simulation(Vehicles, Obstacles, ax):
-    VEHICLE_PLOT, ARROW_PLOT, VEHICLE_PHOTO_PLOT, STATIC_REGION_PLOT, DYNAMIC_REGION_PLOT = ([] for i in range(5))
+    VEHICLE_PLOT, VIRTUAL_STATE_PLOT, ARROW_PLOT, VEHICLE_PHOTO_PLOT, STATIC_REGION_PLOT, DYNAMIC_REGION_PLOT = ([] for i in range(6))
     OBSTACLE_FIG, OBSTACLE_PHOTO = ([] for i in range(2))
 
     for obstacle in Obstacles:
@@ -12,18 +12,20 @@ def plot_simulation(Vehicles, Obstacles, ax):
             OBSTACLE_PHOTO.append(obstacle_photo)
     
     for vehicle in Vehicles:
-        vehicle_plot, arrow_plot, vehicle_photo_plot, static_region_plot, dynamic_region_plot = vehicle.plot(ax)
+        vehicle_plot, virtual_state_plot, arrow_plot, vehicle_photo_plot, static_region_plot, dynamic_region_plot = vehicle.plot(ax)
         VEHICLE_PLOT.append(vehicle_plot)
+        VIRTUAL_STATE_PLOT.append(virtual_state_plot)
         ARROW_PLOT.append(arrow_plot)
         VEHICLE_PHOTO_PLOT.append(vehicle_photo_plot)
         STATIC_REGION_PLOT.append(static_region_plot)
         DYNAMIC_REGION_PLOT.append(dynamic_region_plot)
-
+    
     plt.draw()
-    plt.pause(Vehicles[0].sampling_time*0.1)
+    plt.pause(Vehicles[0].sampling_time*0.01)
 
     for i in range(len(VEHICLE_PLOT)):
         VEHICLE_PLOT[i].remove()
+        VIRTUAL_STATE_PLOT[i].remove()
         ARROW_PLOT[i].remove()
         STATIC_REGION_PLOT[i].remove()
         DYNAMIC_REGION_PLOT[i].remove()
@@ -46,8 +48,8 @@ def save_graph(Vehicles):
         residual_state_history = np.array(vehicle.state_history)-np.array(vehicle.goal)
             
         plt.figure()
-        plt.title('Vehicle Velocity')
-        plt.plot(time_history,control_input_history[:,0])
+        plt.title('Vehicle Velocity (Km/hr)')
+        plt.plot(time_history,control_input_history[:,0]*18/5)
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Velocity.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
         
         plt.figure()
@@ -88,6 +90,7 @@ def save_graph(Vehicles):
         plt.legend()
         plt.axhline(y=0, color='r', linestyle='--')
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Obstacle_&_Vehicle_{}_Residual (m)'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+        
         # plt.figure()
         # plt.title('X Position')
         # plt.plot(time_history,state_history[:,0])

@@ -43,7 +43,11 @@ if __name__== '__main__':
                                 "Zoom for the Photo")
     '''
 
-    Obstacle_1 = Obstacle(1, "Static", [50, 0, 2, 0, 0], sampling_time)
+    Obstacle_1 = Obstacle(1, 
+                         "Static", 
+                         [50, 25, 2, 0, 0], 
+                         sampling_time)
+                            
     # Obstacle_2 = Obstacle(2, [50, 25, 2, 0, 0])
     # Obstacle_3 = Obstacle(3, [50, 50, 2, 0, 0])
     # Obstacle_4 = Obstacle(4, [ 50, 50, 2, 10*5/18, 270], "Dynamic", "../Object_Photos/police.png")
@@ -76,7 +80,7 @@ if __name__== '__main__':
     
     Start_1 = [0.0, 25.0, 0.0, 0.0]
     Goal_1 = [100.0, 25.0, 0.0, 0.0]
-    inital_control_input_1 = [20.0*5/18,0.0]
+    inital_control_input_1 = [0.0*5/18,0.0]
     start_time_1 = 0
     Vehicle_1 = Vehicle(1, 
                         Start_1,Goal_1, 
@@ -91,22 +95,22 @@ if __name__== '__main__':
                         "../Object_Photos/aventador_y.png", 
                         ZOOM=0.02)
 
-    Start_2 = [100.0, 25.0, 180.0, 0.0]
-    Goal_2 = [0.0, 25.0, 0.0, 0.0]
-    inital_control_input_2 = [20.0*5/18,0.0]
-    start_time_2 = 0
-    Vehicle_2 = Vehicle(2, 
-                        Start_2,Goal_2, 
-                        inital_control_input_2, 
-                        120.0*5/18, 10, 
-                        start_time_2,
-                        sampling_time, 
-                        prediction_horizon, 
-                        [Obstacle_1], 
-                        [50, 150], 
-                        "#f50116", 
-                        "../Object_Photos/ferrari_2.png", 
-                        ZOOM = 0.058)
+    # Start_2 = [100.0, 25.0, 180.0, 0.0]
+    # Goal_2 = [0.0, 25.0, 0.0, 0.0]
+    # inital_control_input_2 = [20.0*5/18,0.0]
+    # start_time_2 = 0
+    # Vehicle_2 = Vehicle(2, 
+    #                     Start_2,Goal_2, 
+    #                     inital_control_input_2, 
+    #                     120.0*5/18, 10, 
+    #                     start_time_2,
+    #                     sampling_time, 
+    #                     prediction_horizon, 
+    #                     [Obstacle_1], 
+    #                     [50, 150], 
+    #                     "#f50116", 
+    #                     "../Object_Photos/ferrari_2.png", 
+    #                     ZOOM = 0.058)
     
     # Start_C = [0.0, 50.0, 0.0, 0.0]
     # Goal_C = [100.0, 50.0, 0.0, 0.0]
@@ -116,7 +120,7 @@ if __name__== '__main__':
     # Vehicle_C = Vehicle(3, Start_C,Goal_C, inital_control_input_C, 120.0*5/18, 10,start_time_C, Obstacles, 50, 100, "#003b77", "../Object_Photos/aventador_b.png", ZOOM=0.038)
 
     #Form a List (Do not forget to add all Vehicles in this list)
-    Vehicles = [Vehicle_1, Vehicle_2]#, Vehicle_C]
+    Vehicles = [Vehicle_1]#, Vehicle_C]
 
     for vehicle in Vehicles:
         for other_vehicle in Vehicles:
