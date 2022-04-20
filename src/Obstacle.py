@@ -5,7 +5,10 @@ from matplotlib import pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 class Obstacle:
-    def __init__(self, parameters, obstacle_type='Static', path = None, COLOR = "#c0392b", ZOOM = 0.07):
+    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.07):
+        
+        # Obstacle Details
+        self.id = id
         self.type = obstacle_type # Static or Dynamic?
         
         # Description of the Obstacle 
@@ -16,7 +19,7 @@ class Obstacle:
         angle = parameters[4]*np.pi/180
 
         self.parameters = [x_pos, y_pos, radius, velocity, angle]
-        self.sampling_time = 0.2
+        self.sampling_time = sampling_time
 
         # Load Image from Path
         if path!=None:
@@ -24,9 +27,9 @@ class Obstacle:
         else:
             self.image = None
         if self.type == "Static":
-            self.COLOR = COLOR
+            self.COLOR = COLOR      # Default Color for Static = Red
         else:
-            self.COLOR = "#8e44ad" 
+            self.COLOR = "#8e44ad"  # Default Color For Dynamic = Purple
         self.ZOOM = ZOOM
 
         # Store History

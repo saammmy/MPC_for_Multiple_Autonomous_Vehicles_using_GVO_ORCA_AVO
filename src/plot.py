@@ -5,7 +5,7 @@ def plot_simulation(Vehicles, Obstacles, ax):
     VEHICLE_PLOT, ARROW_PLOT, VEHICLE_PHOTO_PLOT, STATIC_REGION_PLOT, DYNAMIC_REGION_PLOT = ([] for i in range(5))
     OBSTACLE_FIG, OBSTACLE_PHOTO = ([] for i in range(2))
 
-    for obstacle in Vehicles[0].Obstacles:
+    for obstacle in Obstacles:
         if obstacle.type != 'Static':
             obstacle_fig, obstacle_photo = obstacle.plot(ax)
             OBSTACLE_FIG.append(obstacle_fig)
@@ -36,8 +36,8 @@ def plot_simulation(Vehicles, Obstacles, ax):
             OBSTACLE_PHOTO[i].remove()
     
 
-def save_graph(Vehicles, Obstacles):
-    
+def save_graph(Vehicles):
+    Experiment_No = 1
     for i in range(len(Vehicles)):
         vehicle = Vehicles[i]  
         control_input_history = np.array(vehicle.control_input_history)
@@ -48,48 +48,46 @@ def save_graph(Vehicles, Obstacles):
         plt.figure()
         plt.title('Vehicle Velocity')
         plt.plot(time_history,control_input_history[:,0])
-        plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Vehicle_{}_Velocity.png'.format(i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Velocity.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
         
         plt.figure()
         plt.title('Steering Rate (Degree/s)')
         plt.plot(time_history,control_input_history[:,1]*180/np.pi)
-        plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Vehicle_{}_Steering_Rate.png'.format(i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Steering_Rate.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
         plt.title('XY Position Residual(m)')
         plt.plot(time_history,(residual_state_history[:,0]**2+residual_state_history[:,1]**2)**0.5)
-        plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Vehicle_{}_XY_Residual.png'.format(i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_XY_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
         plt.title('Theta Residual(Degree)')
         plt.plot(time_history,residual_state_history[:,2]*180/np.pi)
-        plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Vehicle_{}_Theta_Residual.png'.format(i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Theta_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
         plt.title('Delta Residual (Degree)')
         plt.plot(time_history,residual_state_history[:,3]*180/np.pi)
-        plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Vehicle_{}_Delta_Residual.png'.format(i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Delta_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
-        for j in range(len(Obstacles)):
-            obstacle=Obstacles[j]
+        plt.figure()
+        plt.title('Obstacle and Vehicle {} Residual (m)'.format(i+1))
+        plt.plot()
+        for j in range(len(vehicle.Obstacles)):
+            obstacle=vehicle.Obstacles[j]
             if obstacle.type == "Static":
                 residual_history = np.array(vehicle.state_history)[:,0:2]-np.array(obstacle.history)[0,0:2]
-                plt.figure()
-                plt.title('Obstacle(Static) {} and Vehicle {} Residual(m)'.format(j+1,i+1))
-                plt.plot(time_history,(residual_history[:,0]**2+residual_history[:,1]**2)**0.5)
-                plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Obstacle_{}(Static)_&_Vehicle_{}_Residual.png'.format(i+1,j+1,i+1), bbox_inches='tight')
-            else:
+                plt.plot(time_history,(residual_history[:,0]**2 + residual_history[:,1]**2)**0.5 - (vehicle.size/2 + obstacle.parameters[2]), label = 'Obstacle {} (Static)'.format(j+1))
+            elif obstacle.type == "Dynamic":
                 residual_history = np.array(vehicle.state_history)[:,0:2]-np.array(obstacle.history)[0:len(vehicle.state_history),0:2]
-                plt.figure()
-                plt.title('Obstacle(Dynamic) {} and Vehicle {} Residual(m)'.format(j+1,i+1))
-                plt.plot(time_history,(residual_history[:,0]**2+residual_history[:,1]**2)**0.5)
-                plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Obstacle_{}(Static)_&_Vehicle_{}_Residual.png'.format(i+1,j+1,i+1), bbox_inches='tight')
-                
-
-
-
-
-
+                plt.plot(time_history,(residual_history[:,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size/2 + obstacle.parameters[2]), label = 'Obstacle {} (Dynamic)'.format(j+1))
+            elif obstacle.type == "Vehicle":
+                size = min(len(vehicle.state_history),len(obstacle.state_history))
+                residual_history = np.array(vehicle.state_history)[0:size,0:2]-np.array(obstacle.state_history)[0:size,0:2]
+                plt.plot(time_history,(residual_history[:,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size + obstacle.size)/2, label = 'Obstacle {} (Vehicle)'.format(j+1))
+        plt.legend()
+        plt.axhline(y=0, color='r', linestyle='--')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Obstacle_&_Vehicle_{}_Residual (m)'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
         # plt.figure()
         # plt.title('X Position')
         # plt.plot(time_history,state_history[:,0])

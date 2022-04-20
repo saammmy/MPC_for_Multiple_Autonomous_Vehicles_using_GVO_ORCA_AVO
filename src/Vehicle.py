@@ -1,3 +1,4 @@
+from turtle import pos
 from PIL import Image
 import autograd.numpy as np
 from autograd import grad
@@ -7,8 +8,22 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 class Vehicle:
 
-    def __init__(self, start, goal, inital_control_input, max_v, max_phi, start_time, Obstacles, static_offset = 100, dynamic_offset = 250, COLOR = "#f1c40f", path = None,  ZOOM = 0.05):
+    def __init__(self, id, start, goal, inital_control_input, max_v, max_phi, start_time, sampling_time, prediction_horizon, Obstacles, offset = [100, 250], COLOR = "#f1c40f", path = None,  ZOOM = 0.05):
     
+        # Vehicle Details (Dimesions Inspired by Lamborgini Aventador)
+        self.length = 2.70  # Wheelbase
+        self.size = 4.78    # Vehicle Size (Diameter)
+        self.type = "Vehicle"
+        self.id = id
+        # Load Image from Path
+        if path!=None:
+            self.image = Image.open(path)
+        else:
+            self.image = None
+
+        self.COLOR = COLOR  #Color of the Vehicle Path/ Sensing Region
+        self.ZOOM = ZOOM    #Zoom of the Marker (Photo)
+
         '''
         Start, goal and state contains:
             pos_x : Position in X-coordinate (m)
@@ -32,6 +47,7 @@ class Vehicle:
 
         self.state = [x_start, y_start, theta_start, delta_start]
         self.virtual_state = [x_start, y_start, theta_start, delta_start]
+
         '''
         # Control Input = [v, phi]
         # v : Velocity (m/s)
@@ -41,48 +57,30 @@ class Vehicle:
         inital_phi = inital_control_input[1]*np.pi/180
         self.control_input = [initial_v, inital_phi]
 
-        # Vehicle Dimensions (Circular Aventador)
-        self.length = 2.70 #Wheelbase
-        self.size = 4.78 #Vehicle Size (Diameter)
-
-        # Load Image from Path
-        if path!=None:
-            self.image = Image.open(path)
-        else:
-            self.image = None
-
-        self.COLOR = COLOR
-        self.ZOOM = ZOOM
-
-        # Obstacles
-        self.Obstacles = Obstacles
-        # Sensing range of the obstacle for a vehicle
-        self.static_offset = static_offset
-        self.dynamic_offset = dynamic_offset
-        
-        # self.obstacles = [[50,25,2]] #,[50,40,2],[50,10,2],[65,25,2],[35,25,2]]
-        # self.dynamic_obstacles=[[75,50,1,210*np.pi/180,2],[25,50,1,-30*np.pi/180,2]]#,[0,25,1,-30*np.pi/180,2],[50,0,1,30*np.pi/180,2]]
-
-        # self.obstacles = [[0,50,2],[50,0,2],[50,100,2],[100,50,2],[50,50,2]]
-        # self.dynamic_obstacles=[[25,0,2,90*np.pi/180,2],[0,25,2,0*np.pi/180,2],[25,75,2,0*np.pi/180,2],[75,25,3.2,-90*np.pi/180,2]]
-
-        # self.dynamic_obstacles=[[18.5,21.5,0.5,230*np.pi/180,0.5],[21.5,18.5,0.5,220*np.pi/180,0.5]]
-        # Start Time of the Vehicle
-        # self.start_time = start_time
-        self.time = start_time
-        self.prediction_horizon = 10
-        self.control_horizon = 1.0
-        self.sampling_time = 0.2
+        # Constraints:
         self.max_v = max_v
         self.max_phi = max_phi
 
+        # Obstacles
+        self.Obstacles = Obstacles
+        # Sensing range of the obstacles for the vehicle
+        self.static_offset = offset[0]
+        self.dynamic_offset = offset[1]
+        
+        # Simulation Parameters
+        self.time = start_time
+        self.prediction_horizon = prediction_horizon
+        self.control_horizon = 1.0
+        self.sampling_time = sampling_time
+
         # History of the Vehicle
-        self.state_history = []
+        self.state_history = [[x_start, y_start, theta_start, delta_start]]
         self.state_history.append([x_start, y_start, theta_start, delta_start])
-        self.time_history = []
+        self.time_history = [start_time]
         self.time_history.append(start_time)
-        self.control_input_history = []
+        self.control_input_history = [[initial_v, inital_phi]]
         self.control_input_history.append([initial_v, inital_phi])
+
 
     def distance(self, x1, x2):
         return np.sqrt((x1[0]-x2[0])**2 + (x1[1]-x2[1])**2)
@@ -167,17 +165,30 @@ class Vehicle:
         
         lambda_safety = 0
         for obstacle in self.Obstacles:
-            obs_x = obstacle.parameters[0]
-            obs_y = obstacle.parameters[1]
+            if obstacle.type != "Vehicle":
+                obs_x = obstacle.parameters[0]
+                obs_y = obstacle.parameters[1]
+                radius = obstacle.parameters[2]
+            else:
+                if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
+                    other_vehicle_state = obstacle.state_history[-2]
+                else:
+                    other_vehicle_state = obstacle.state_history[-1]
+                obs_x = other_vehicle_state[0]
+                obs_y = other_vehicle_state[1]
+                radius = obstacle.size/2
 
             dist = self.distance([obs_x,obs_y],[self.state[0],self.state[1]])
             dist_virtual = self.distance([obs_x,obs_y],[self.virtual_state[0],self.virtual_state[1]])
             if obstacle.type == 'Static':
                 if dist < self.static_offset:
-                    lambda_safety += max(0,-dist_virtual + obstacle.parameters[2] + self.size/2)
-            else:
+                    lambda_safety += max(0,-dist_virtual + radius + self.size/2)
+            elif obstacle.type == 'Dynamic': 
                 if dist < self.dynamic_offset:
-                    lambda_safety += max(0,-dist_virtual + obstacle.parameters[2] + self.size/2)
+                    lambda_safety += max(0,-dist_virtual + radius + self.size/2)
+            elif obstacle.type == 'Vehicle':
+                if dist < self.dynamic_offset:
+                    lambda_safety += max(0,-dist_virtual + radius + self.size/2)
 
         constraint_cost = W_v*lamda_v + W_phi*lamda_phi + W_ws*lamda_ws + W_safety*lambda_safety
         
@@ -186,15 +197,37 @@ class Vehicle:
     def obstacle_cost(self, W_static = 1000, W_dynamic = 1500):
         obstacle_cost = 0
         for obstacle in self.Obstacles:
-            obs_x = obstacle.parameters[0]
-            obs_y = obstacle.parameters[1]
+            if obstacle.type != "Vehicle":
+                obs_x = obstacle.parameters[0]
+                obs_y = obstacle.parameters[1]
+            else:
+                if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
+                    other_vehicle_state = obstacle.state_history[-2]
+                else:
+                    other_vehicle_state = obstacle.state_history[-1]
+                obs_x = other_vehicle_state[0]
+                obs_y = other_vehicle_state[1]
+                # print("X=",obs_x)
+                # print("Y=",obs_y)
 
             dist = self.distance([obs_x,obs_y],[self.state[0],self.state[1]])
             dist_virtual = self.distance([obs_x,obs_y],[self.virtual_state[0],self.virtual_state[1]])
+            # if dist_virtual<10e-4:
+            #     print("virtual distance = ",dist_virtual)
+            #     print("X", obs_x)
+            #     print("Y", obs_y)
+            #     print(obstacle.type)
+            #     print(obstacle.id)
+            #     print(self.id)
+            #     print("------")
+
             if obstacle.type == 'Static':
                 if dist < self.static_offset:
                     obstacle_cost += 1/dist_virtual * W_static
-            else:
+            elif obstacle.type == 'Dynamic':
+                if dist < self.dynamic_offset:
+                    obstacle_cost += 1/dist_virtual * W_dynamic
+            elif obstacle.type == 'Vehicle':
                 if dist < self.dynamic_offset:
                     obstacle_cost += 1/dist_virtual * W_dynamic
         
@@ -217,7 +250,7 @@ class Vehicle:
             W_smoothness=1
             W_constraint=10
             W_static=1000
-            W_dynamic=1500
+            W_dynamic=2000
 
             # Adding a Terminal Cost for the final prediction horizon
             if i == self.prediction_horizon-1:
@@ -232,7 +265,7 @@ class Vehicle:
         
         return total_cost
 
-    def optimizer(self, iteration = 15, learning_rate = 0.005, decay = 0.9, eps = 1e-8):
+    def optimizer(self, iteration = 20, learning_rate = 0.005, decay = 0.9, eps = 1e-8):
         # Using Autograd to find the gradient
         gradient = grad(self.total_cost)
         mean_square_gradient = np.asarray([0.0, 0.0])
