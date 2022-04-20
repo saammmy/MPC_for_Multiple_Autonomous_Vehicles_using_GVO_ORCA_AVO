@@ -38,8 +38,7 @@ def plot_simulation(Vehicles, Obstacles, ax):
             OBSTACLE_PHOTO[i].remove()
     
 
-def save_graph(Vehicles):
-    Experiment_No = 1
+def save_graph(Vehicles, Experiment_No):
     for i in range(len(Vehicles)):
         vehicle = Vehicles[i]  
         control_input_history = np.array(vehicle.control_input_history)
@@ -81,12 +80,13 @@ def save_graph(Vehicles):
                 residual_history = np.array(vehicle.state_history)[:,0:2]-np.array(obstacle.history)[0,0:2]
                 plt.plot(time_history,(residual_history[:,0]**2 + residual_history[:,1]**2)**0.5 - (vehicle.size/2 + obstacle.parameters[2]), label = 'Obstacle {} (Static)'.format(j+1))
             elif obstacle.type == "Dynamic":
-                residual_history = np.array(vehicle.state_history)[:,0:2]-np.array(obstacle.history)[0:len(vehicle.state_history),0:2]
-                plt.plot(time_history,(residual_history[:,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size/2 + obstacle.parameters[2]), label = 'Obstacle {} (Dynamic)'.format(j+1))
+                size = min(len(vehicle.state_history),len(obstacle.history))
+                residual_history = np.array(vehicle.state_history)[:size,0:2]-np.array(obstacle.history)[:size,0:2]
+                plt.plot(time_history[0:size],(residual_history[:size,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size/2 + obstacle.parameters[2]), label = 'Obstacle {} (Dynamic)'.format(j+1))
             elif obstacle.type == "Vehicle":
                 size = min(len(vehicle.state_history),len(obstacle.state_history))
                 residual_history = np.array(vehicle.state_history)[0:size,0:2]-np.array(obstacle.state_history)[0:size,0:2]
-                plt.plot(time_history,(residual_history[:,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size + obstacle.size)/2, label = 'Obstacle {} (Vehicle)'.format(j+1))
+                plt.plot(time_history[0:size],(residual_history[:,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size + obstacle.size)/2, label = 'Obstacle {} (Vehicle)'.format(j+1))
         plt.legend()
         plt.axhline(y=0, color='r', linestyle='--')
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Obstacle_&_Vehicle_{}_Residual (m)'.format(Experiment_No,i+1,i+1), bbox_inches='tight')

@@ -15,7 +15,7 @@ class Obstacle:
         x_pos = parameters[0] 
         y_pos = parameters[1]
         radius = parameters[2]
-        velocity = parameters[3]
+        velocity = parameters[3] * 5/18
         angle = parameters[4]*np.pi/180
 
         self.parameters = [x_pos, y_pos, radius, velocity, angle]
