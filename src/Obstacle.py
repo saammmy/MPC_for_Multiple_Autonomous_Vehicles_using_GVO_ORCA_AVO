@@ -5,12 +5,12 @@ from matplotlib import pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 class Obstacle:
-    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.07):
+    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.04, collided = False):
         
         # Obstacle Details
         self.id = id
         self.type = obstacle_type # Static or Dynamic?
-        
+        self.collided = collided
         # Description of the Obstacle 
         x_pos = parameters[0] 
         y_pos = parameters[1]

@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-def plot_simulation(Vehicles, Obstacles, ax):
+def plot_simulation(Vehicles, Obstacles, ax, save = False, virtual_state_flag = True, Experiment_No = 1):
     VEHICLE_PLOT, VIRTUAL_STATE_PLOT, ARROW_PLOT, VEHICLE_PHOTO_PLOT, STATIC_REGION_PLOT, DYNAMIC_REGION_PLOT = ([] for i in range(6))
     OBSTACLE_FIG, OBSTACLE_PHOTO = ([] for i in range(2))
 
@@ -12,16 +12,25 @@ def plot_simulation(Vehicles, Obstacles, ax):
             OBSTACLE_PHOTO.append(obstacle_photo)
     
     for vehicle in Vehicles:
-        vehicle_plot, virtual_state_plot, arrow_plot, vehicle_photo_plot, static_region_plot, dynamic_region_plot = vehicle.plot(ax)
+        # print(virtual_state_plot)
+        # print(vehicle.id)
+        # print("-------------")
+        vehicle_plot, virtual_state_plot, arrow_plot, vehicle_photo_plot, static_region_plot, dynamic_region_plot = vehicle.plot(ax, virtual_state_flag)
         VEHICLE_PLOT.append(vehicle_plot)
         VIRTUAL_STATE_PLOT.append(virtual_state_plot)
         ARROW_PLOT.append(arrow_plot)
         VEHICLE_PHOTO_PLOT.append(vehicle_photo_plot)
         STATIC_REGION_PLOT.append(static_region_plot)
         DYNAMIC_REGION_PLOT.append(dynamic_region_plot)
-    
+
     plt.draw()
-    plt.pause(Vehicles[0].sampling_time*0.01)
+    # plt.pause(Vehicles[0].sampling_time*0.01)
+    if save == True:
+        plt.pause(5)
+        plt.savefig('../Graphs/Experiment_{}/Simulation_Result.png'.format(Experiment_No), bbox_inches='tight')
+    else:
+        plt.pause(Vehicles[0].sampling_time*0.01)
+
 
     for i in range(len(VEHICLE_PLOT)):
         VEHICLE_PLOT[i].remove()
@@ -47,33 +56,69 @@ def save_graph(Vehicles, Experiment_No):
         residual_state_history = np.array(vehicle.state_history)-np.array(vehicle.goal)
             
         plt.figure()
-        plt.title('Vehicle Velocity (Km/hr)')
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Velocity")
+        plt.ylabel('Velocity(Km/hr)')
+        plt.xlabel('Time (sec)')
         plt.plot(time_history,control_input_history[:,0]*18/5)
+        plt.axhline(y=vehicle.max_v*18/5, color='r', linestyle='--')
+        plt.axhline(y=-vehicle.max_v*18/5, color='r', linestyle='--')
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Velocity.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
         
         plt.figure()
-        plt.title('Steering Rate (Degree/s)')
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Steering Rate")
+        plt.ylabel('Steering Rate (deg/s)')
+        plt.xlabel('Time (sec)')
         plt.plot(time_history,control_input_history[:,1]*180/np.pi)
+        plt.axhline(y=vehicle.max_phi*180/np.pi, color='r', linestyle='--')
+        plt.axhline(y=-vehicle.max_phi*180/np.pi, color='r', linestyle='--')
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Steering_Rate.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
-        plt.title('XY Position Residual(m)')
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Distance To Goal")
+        plt.ylabel('Residual Position (m)')
+        plt.xlabel('Time (sec)')
         plt.plot(time_history,(residual_state_history[:,0]**2+residual_state_history[:,1]**2)**0.5)
-        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_XY_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Distance_To_Goal.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
-        plt.title('Theta Residual(Degree)')
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Residual Orientation")
+        plt.ylabel('Residual Theta (deg)')
+        plt.xlabel('Time (sec)')
         plt.plot(time_history,residual_state_history[:,2]*180/np.pi)
-        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Theta_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Residual_Orientation.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
-        plt.title('Delta Residual (Degree)')
-        plt.plot(time_history,residual_state_history[:,3]*180/np.pi)
-        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Delta_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Orientation Angle")
+        plt.ylabel('Theta (deg)')
+        plt.xlabel('Time (sec)')
+        plt.plot(time_history,state_history[:,2]*180/np.pi)
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Orientation_Angle.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
 
         plt.figure()
-        plt.title('Obstacle and Vehicle {} Residual (m)'.format(i+1))
-        plt.plot()
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Steering Angle")
+        plt.ylabel('Delta (deg)')
+        plt.xlabel('Time (sec)')
+        plt.plot(time_history,state_history[:,3]*180/np.pi)
+        plt.axhline(y=vehicle.max_delta*180/np.pi, color='r', linestyle='--')
+        plt.axhline(y=-vehicle.max_delta*180/np.pi, color='r', linestyle='--')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Steering_Angle.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+
+        # plt.figure()
+        # plt.title('Delta Residual (Degree)')
+        # plt.plot(time_history,residual_state_history[:,3]*180/np.pi)
+        # plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Delta_Residual.png'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+
+        plt.figure()
+        plt.suptitle('Vehicle {}'.format(i+1),fontweight="bold")
+        plt.title("Distance To Obstacles")
+        plt.ylabel('Distance (m)')
+        plt.xlabel('Time (sec)')
         for j in range(len(vehicle.Obstacles)):
             obstacle=vehicle.Obstacles[j]
             if obstacle.type == "Static":
@@ -89,7 +134,7 @@ def save_graph(Vehicles, Experiment_No):
                 plt.plot(time_history[0:size],(residual_history[:,0]**2+residual_history[:,1]**2)**0.5 - (vehicle.size + obstacle.size)/2, label = 'Obstacle {} (Vehicle)'.format(j+1))
         plt.legend()
         plt.axhline(y=0, color='r', linestyle='--')
-        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Obstacle_&_Vehicle_{}_Residual (m)'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
+        plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Distance_To_Obstacles (m)'.format(Experiment_No,i+1,i+1), bbox_inches='tight')
         
         # plt.figure()
         # plt.title('X Position')
@@ -106,7 +151,4 @@ def save_graph(Vehicles, Experiment_No):
         # plt.plot(time_history,state_history[:,2]*180/np.pi)
         # plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Theta.png'.format(i+1), bbox_inches='tight')
 
-        # plt.figure()
-        # plt.title('Delta (Degree)')
-        # plt.plot(time_history,state_history[:,3]*180/np.pi)
-        # plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Delta.png'.format(i+1), bbox_inches='tight')
+        

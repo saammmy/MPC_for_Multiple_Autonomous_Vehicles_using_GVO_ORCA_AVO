@@ -1,4 +1,5 @@
 from dis import dis
+from turtle import color
 from PIL import Image
 import autograd.numpy as np
 from autograd import grad
@@ -8,13 +9,14 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 class Vehicle:
 
-    def __init__(self, id, start, goal, inital_control_input, max_v, max_phi, start_time, sampling_time, prediction_horizon, Obstacles, offset = [100, 250], COLOR = "#f1c40f", path = None,  ZOOM = 0.05):
-    
+    def __init__(self, id, start, goal_list, inital_control_input, max_v, max_phi, max_delta, start_time, sampling_time, prediction_horizon, Obstacles, offset = [100, 250], COLOR = "#f1c40f", path = None,  ZOOM = 0.05, collided = False):
+     
         # Vehicle Details (Dimesions Inspired by Lamborgini Aventador)
         self.length = 2.70  # Wheelbase
         self.size = 4.78    # Vehicle Size (Diameter)
         self.type = "Vehicle"
         self.id = id
+        self.collided = collided
         # Load Image from Path
         if path!=None:
             self.image = Image.open(path)
@@ -39,11 +41,19 @@ class Vehicle:
         
         self.start = [x_start, y_start, theta_start, delta_start]
 
-        x_goal=goal[0]
-        y_goal=goal[1]
-        theta_goal=goal[2]*np.pi/180
-        delta_goal=goal[3]*np.pi/180
+        self.goal_list = goal_list
+        goal = self.goal_list.pop(0)
+        x_goal = goal[0]
+        y_goal = goal[1]
+        theta_goal = goal[2]*np.pi/180
+        delta_goal = goal[3]*np.pi/180
         self.goal = [x_goal, y_goal, theta_goal, delta_goal]
+
+        if self.goal_list:
+            self.goal_bound =  self.size * 3
+        else:
+            self.goal_bound = self.size
+        
 
         self.state = [x_start, y_start, theta_start, delta_start]
         self.virtual_state = [x_start, y_start, theta_start, delta_start]
@@ -60,13 +70,14 @@ class Vehicle:
         # Constraints:
         self.max_v = max_v *5/18
         self.max_phi = max_phi * np.pi/180
+        self.max_delta = max_delta * np.pi/180
 
         # Obstacles
         self.Obstacles = Obstacles
         # Sensing range of the obstacles for the vehicle
         self.static_offset = offset[0]
         self.dynamic_offset = offset[1]
-        self.tau_vo = 4 # Here tau = 2*sampling_time (secs)
+        self.tau_vo = prediction_horizon + 5 # Here tau = 2*sampling_time (secs)
 
         # Simulation Parameters
         self.time = start_time
@@ -149,27 +160,66 @@ class Vehicle:
         W3 = 0
 
         goal_reach_cost = W1*cost_xy + W2*cost_theta + W3*cost_delta
-
+        # print("Goal Reach Cost",goal_reach_cost*2)
         return goal_reach_cost
 
     
     def smoothness_cost(self, virtual_input):
-        cost_v = ((self.control_input[0] - virtual_input[0])/self.sampling_time)
-        cost_phi = ((self.control_input[1] - virtual_input[1])/self.sampling_time)
+        cost_v = ((self.control_input[0] - virtual_input[0])**2/self.sampling_time)
+        cost_phi = ((self.control_input[1] - virtual_input[1])**2/self.sampling_time)
 
         # Weights
-        W1 = 100
-        W2 = 1
+        W1 = 1
+        W2 = 0.1
 
         smoothness_cost = W1*cost_v + W2*cost_phi 
-
+        # print("Velocity Smoothness", cost_v)
+        # print("Phi Smoothness", cost_phi*10)
+        # print("Smoothness Cost",smoothness_cost*100)
         return smoothness_cost
 
-    def constraint_cost(self, virtual_input, W_v = 10, W_phi = 1, W_ws = 1, W_safety = 10):
+    def constraint_cost(self, virtual_input, W_v = 10, W_phi = 1, W_delta=100, W_ws = 1, W_safety = 10):
         lamda_v = max(0,virtual_input[0] - self.max_v) + max(0,-virtual_input[0] - self.max_v)
         lamda_phi = max(0,virtual_input[1] - self.max_phi) + max(0,-virtual_input[1] - self.max_phi)
+        lamda_delta = max(0,virtual_input[1] - self.max_delta) + max(0,-virtual_input[1] - self.max_delta)
         lamda_ws = 0 #Both x and y workspace constraints
         
+        # lambda_safety = 0
+        # for obstacle in self.Obstacles:
+        #     if obstacle.type != "Vehicle":
+        #         obs_x = obstacle.parameters[0]
+        #         obs_y = obstacle.parameters[1]
+        #         radius = obstacle.parameters[2]
+        #     else:
+        #         if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
+        #             other_vehicle_state = obstacle.state_history[-1]
+        #         else:
+        #             other_vehicle_state = obstacle.state_history[-2]
+        #         obs_x = other_vehicle_state[0]
+        #         obs_y = other_vehicle_state[1]
+        #         radius = obstacle.size/2
+
+        #     dist = self.distance([obs_x,obs_y],[self.state[0],self.state[1]])
+        #     dist_virtual = self.distance([obs_x,obs_y],[self.virtual_state[0],self.virtual_state[1]])
+        #     if obstacle.type == 'Static':
+        #         if dist < self.static_offset:
+        #             lambda_safety += max(0,-dist_virtual + (radius + self.size/2)*1.25)
+        #     elif obstacle.type == 'Dynamic': 
+        #         if dist < self.dynamic_offset:
+        #             lambda_safety += max(0,-dist_virtual + (radius + self.size/2)*1.25)
+        #     elif obstacle.type == 'Vehicle':
+        #         if dist < self.dynamic_offset:
+        #             lambda_safety += max(0,-dist_virtual + (radius + self.size/2)*1.25)
+
+        constraint_cost = W_v*lamda_v + W_phi*lamda_phi + W_delta*lamda_delta + W_ws*lamda_ws # + W_safety*lambda_safety
+        # if constraint_cost !=0:
+            # print("Constraint Cost",constraint_cost*100000)
+        
+        return constraint_cost
+    
+    def obstacle_cost(self, W_static = 10000, W_dynamic = 10000, W_safety = 100):
+        # W_dynamic = 0
+        obstacle_cost = 0
         lambda_safety = 0
         for obstacle in self.Obstacles:
             if obstacle.type != "Vehicle":
@@ -178,63 +228,41 @@ class Vehicle:
                 radius = obstacle.parameters[2]
             else:
                 if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
-                    other_vehicle_state = obstacle.state_history[-1]
+                    other_vehicle_state = obstacle.state_history[-1][0:3]
                 else:
-                    other_vehicle_state = obstacle.state_history[-2]
+                    other_vehicle_state = obstacle.state_history[-2][0:3]
                 obs_x = other_vehicle_state[0]
                 obs_y = other_vehicle_state[1]
                 radius = obstacle.size/2
 
             dist = self.distance([obs_x,obs_y],[self.state[0],self.state[1]])
             dist_virtual = self.distance([obs_x,obs_y],[self.virtual_state[0],self.virtual_state[1]])
-            if obstacle.type == 'Static':
-                if dist < self.static_offset:
-                    lambda_safety += max(0,-dist_virtual + radius + self.size/2)
-            elif obstacle.type == 'Dynamic': 
-                if dist < self.dynamic_offset:
-                    lambda_safety += max(0,-dist_virtual + radius + self.size/2)
-            elif obstacle.type == 'Vehicle':
-                if dist < self.dynamic_offset:
-                    lambda_safety += max(0,-dist_virtual + radius + self.size/2)
-
-        constraint_cost = W_v*lamda_v + W_phi*lamda_phi + W_ws*lamda_ws + W_safety*lambda_safety
-        
-        return constraint_cost
-    
-    def obstacle_cost(self, W_static = 1000, W_dynamic = 0):
-        # W_dynamic = 0
-        obstacle_cost = 0
-        for obstacle in self.Obstacles:
-            if obstacle.type != "Vehicle":
-                obs_x = obstacle.parameters[0]
-                obs_y = obstacle.parameters[1]
-            else:
-                if self.id < obstacle.id: #This condition ensures that the vehicle doesnt know the updated state of other vehicle
-                    other_vehicle_state = obstacle.state_history[-1][0:3]
-                else:
-                    other_vehicle_state = obstacle.state_history[-2][0:3]
-                obs_x = other_vehicle_state[0]
-                obs_y = other_vehicle_state[1]
-
-            dist = self.distance([obs_x,obs_y],[self.state[0],self.state[1]])
-            dist_virtual = self.distance([obs_x,obs_y],[self.virtual_state[0],self.virtual_state[1]])
+            print(dist)
+            print(radius + self.size/2)
+            if (-dist + (radius + self.size/2)>0 and not obstacle.collided):
+                print("Me Here")
+                obstacle.collided = True
+                plt.plot(self.state[0],self.state[1],"-x", markersize=14, markeredgewidth=3, color = 'black')
 
             if obstacle.type == 'Static':
                 if dist < self.static_offset:
                     obstacle_cost += 1/dist_virtual * W_static
-            elif obstacle.type == 'Dynamic':
+                    lambda_safety += max(0,-dist_virtual + (radius + self.size/2)*1.25) * W_static
+            else:
                 if dist < self.dynamic_offset:
                     obstacle_cost += 1/dist_virtual * W_dynamic
-            elif obstacle.type == 'Vehicle':
-                if dist < self.dynamic_offset:
-                    obstacle_cost += 1/dist_virtual * W_dynamic
+                    lambda_safety += max(0,-dist_virtual + (radius + self.size/2)*1.25) * W_dynamic
+        
+        obstacle_cost += lambda_safety
+        # print("Obstacle Cost",obstacle_cost*11000)
+
         
         return obstacle_cost
 
-    def velocity_obstacle_cost (self, virtual_input, W_dynamic):
+    def velocity_obstacle_cost (self, virtual_input, W_dynamic_VO, W_safety_VO):
         
         velocity_obstacle_cost = 0
-        for _ in range(self.tau_vo):
+        for _ in range(self.tau_vo - self.prediction_horizon):
             self.bicycle_model(virtual_input[0], virtual_input[1])
 
         for obstacle in self.Obstacles:
@@ -263,15 +291,20 @@ class Vehicle:
                 if dist < self.dynamic_offset:
                     virtual_obstacle = []
                     # Assuming Holonomic Model for the Obstacle
-                    for i in range(self.prediction_horizon):
-                        obs_x = obs_x + obs_v * np.cos(obs_angle) * self.tau_vo * self.sampling_time
-                        obs_y = obs_y + obs_v * np.sin(obs_angle) * self.tau_vo * self.sampling_time
+                    for i in range(self.tau_vo):
+                        obs_x = obs_x + obs_v * np.cos(obs_angle) * self.sampling_time
+                        obs_y = obs_y + obs_v * np.sin(obs_angle) * self.sampling_time
                         virtual_obstacle.append([obs_x, obs_y])
-                    dist_X = (np.array(self.virtual_state_history)[self.tau_vo:,0] - np.array(virtual_obstacle)[:,0])**2
-                    dist_Y = (np.array(self.virtual_state_history)[self.tau_vo:,1] - np.array(virtual_obstacle)[:,1])**2
+                    # print(self.state[0])
+                    # print(self.state[1])
+                    # print(virtual_obstacle)
+                    dist_X = (np.array(self.virtual_state_history)[:self.tau_vo,0] - np.array(virtual_obstacle)[:,0])**2
+                    dist_Y = (np.array(self.virtual_state_history)[:self.tau_vo,1] - np.array(virtual_obstacle)[:,1])**2
 
                     dist_virtual = (np.sqrt(dist_X + dist_Y))
-                    velocity_obstacle_cost += np.sum(1/dist_virtual) * W_dynamic
+                    lambda_safety = np.sum(np.maximum(0,-dist_virtual + (radius + self.size/2)*1.2))
+
+                    velocity_obstacle_cost += np.sum(1/dist_virtual) * W_dynamic_VO + lambda_safety * W_safety_VO
 
             # for horizon in range(self.prediction_horizon):
             #     dist_virtual = self.distance(self.virtual_state_history[self.tau_vo+horizon], virtual_obstacle[horizon])
@@ -280,6 +313,8 @@ class Vehicle:
 
             #     else:
             #         velocity_obstacle_cost += 1/dist_virtual * W_dynamic
+
+        # print("Velocity Obstacle Cost",velocity_obstacle_cost)
 
         return velocity_obstacle_cost
 
@@ -295,31 +330,45 @@ class Vehicle:
         # Calculating cost across the prediction horizon
         for i in range(self.prediction_horizon):
             # Weights
-            W_goal_reach = 0.5
-            W_smoothness = 10
-            W_constraint = 10
-            W_static = 8000
-            W_dynamic = 0000
-            W_dynamic_vo = 20000
-            decceleration = 1000
+            W_goal_reach = 1
+            W_smoothness = 1000
+            W_constraint = 1000
+            W_static = 7000
+
+            W_safety = 0 #100000
+            W_dynamic = 0 #20000
+
+            W_safety_VO = 100000
+            W_dynamic_VO = 10000
+
+            decceleration = 2
 
             # Adding a Terminal Cost for the final prediction horizon
             if i == self.prediction_horizon-1:
                 terminal_cost = (self.goal_reach_cost()+(self.virtual_state[2]-self.goal[2])**2)*W_goal_reach*3
+                # print(" Virtual State Angle",self.virtual_state[2]*180/np.pi)
+                # print(" Goal State Angle",self.goal[2]*180/np.pi)
+                # print((self.virtual_state[2]-self.goal[2])*180/np.pi)    
             else:
                 terminal_cost = 0
             
-            if self.distance(self.virtual_state,self.goal) < 25:
-                velocity_cost = virtual_input[0]**2 * decceleration 
-            else:
-                velocity_cost = 0
-
-            total_cost += velocity_cost + self.goal_reach_cost()*W_goal_reach + self.smoothness_cost(virtual_input)*W_smoothness + self.constraint_cost(virtual_input)*W_constraint + self.obstacle_cost(W_static, W_dynamic) + terminal_cost
+            velocity_cost = 0
+            if not self.goal_list:
+                if self.distance(self.virtual_state,self.goal) < 30:
+                        velocity_cost += virtual_input[0]**2 * decceleration * 100
             
+            velocity_cost += virtual_input[0]**2 * decceleration
+            # print("Terminal Cost", terminal_cost)
+            # print("Velocity Cost", velocity_cost)
+            # print("-----------------------------------------------")
+
+            total_cost += velocity_cost + self.goal_reach_cost() * W_goal_reach + self.smoothness_cost(virtual_input)*W_smoothness + self.constraint_cost(virtual_input) * W_constraint + self.obstacle_cost(W_static, W_dynamic, W_safety) + terminal_cost
             # Update the virtual state to next prediction horizon
             self.bicycle_model(virtual_input[0],virtual_input[1])
 
-        total_cost += self.velocity_obstacle_cost(virtual_input, W_dynamic_vo)
+        # print("Total Cost Before VO", total_cost)
+        
+        total_cost += self.velocity_obstacle_cost(virtual_input, W_dynamic_VO, W_safety_VO)
                 
         return total_cost
 
@@ -336,10 +385,15 @@ class Vehicle:
             virtual_input = virtual_input - (learning_rate/((mean_square_gradient)**0.5+eps))*cost_gradient
         
         # Assigning the optimized virtual input to vehicle
+
         self.control_input = virtual_input
+
+        # self.control_input = (self.control_input + virtual_input)/2
+        # self.control_input[1] = self.control_input[1] + virtual_input[1]/2
+        
     
 
-    def plot(self, ax):
+    def plot(self, ax, virtual_state_flag = True):
         # blue: #003b77
         # red: #f50116
         # yellow: #f1c40f
@@ -356,18 +410,36 @@ class Vehicle:
             img= img.rotate(self.state[2]*180/np.pi,expand=1)
             vehicle_photo = AnnotationBbox(OffsetImage(img, zoom= self.ZOOM), (self.state[0], self.state[1]), frameon=False)
             ax.add_artist(vehicle_photo)
+            
+        if virtual_state_flag == True:
+            virtual_states = plt.scatter(np.array(self.virtual_state_history)[0:self.prediction_horizon,0]._value, np.array(self.virtual_state_history)[0:self.prediction_horizon,1]._value, edgecolor = 'black' ,color = self.COLOR)
+            dynamic_region = plt.Circle((self.state[0], self.state[1]),self.dynamic_offset, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.2)
+            static_region = plt.Circle((self.state[0], self.state[1]),self.static_offset, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.2)
+        else:
+            virtual_states = plt.scatter(self.state[0], self.state[1], color = self.COLOR)
+            dynamic_region = plt.Circle((self.state[0], self.state[1]),0, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.2)
+            static_region = plt.Circle((self.state[0], self.state[1]),0, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.2)
 
-        virtual_states = plt.scatter(np.array(self.virtual_state_history)[0:self.prediction_horizon,0]._value, np.array(self.virtual_state_history)[0:self.prediction_horizon,1]._value, edgecolor = 'black' ,color = self.COLOR)
-
-        dynamic_region = plt.Circle((self.state[0], self.state[1]),self.dynamic_offset, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.1)
-        static_region = plt.Circle((self.state[0], self.state[1]),self.static_offset, facecolor= self.COLOR, edgecolor='black', linestyle=':', alpha = 0.3)
         ax.add_artist(static_region)
         ax.add_artist(dynamic_region)
          
         arrow = plt.arrow(self.state[0], self.state[1], 3*np.cos(self.state[2]), 3*np.sin(self.state[2]), width = 0.3, facecolor= self.COLOR, edgecolor='black')
         plt.plot(np.array(self.state_history)[:,0], np.array(self.state_history)[:,1], color = self.COLOR)
 
-        plt.plot(self.start[0],self.start[1], marker='*',  markersize=20, color = self.COLOR, markeredgecolor='black')
-        plt.plot(self.goal[0],self.goal[1], marker='D',  markersize=20, color = self.COLOR, markeredgecolor='black')
+        # plt.plot(self.start[0],self.start[1], marker='*',  markersize=20, color = self.COLOR, markeredgecolor='black')
+        # plt.plot(self.goal[0],self.goal[1], marker='D',  markersize=20, color = self.COLOR, markeredgecolor='black')
 
         return vehicle, virtual_states, arrow, vehicle_photo, static_region, dynamic_region
+
+    def global_plot(self,ax):
+
+        plt.plot(self.start[0],self.start[1], marker='*',  markersize=25, color = self.COLOR, markeredgecolor='black')
+        plt.plot([self.start[0], self.goal[0]], [self.start[1], self.goal[1]], '--', color = self.COLOR, alpha = 0.5 )
+        if len(self.goal_list)>0:
+            plt.plot([self.goal_list[0][0], self.goal[0]], [self.goal_list[0][1], self.goal[1]], '--', marker = 's', markersize=10, color = self.COLOR, markeredgecolor='black', alpha = 0.5 )
+            plt.plot(np.array(self.goal_list)[:,0], np.array(self.goal_list)[:,1], '--', marker = 's',  markersize=10, color = self.COLOR, markeredgecolor='black', alpha = 0.5)
+            plt.plot(self.goal_list[-1][0],self.goal_list[-1][1], marker='D',  markersize=20, color = self.COLOR, markeredgecolor='black')
+        else:
+            plt.plot(self.goal[0],self.goal[1], marker='D',  markersize=20, color = self.COLOR, markeredgecolor='black')
+        
+        # plt.show()
