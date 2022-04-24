@@ -3,9 +3,10 @@ from PIL import Image
 import autograd.numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+from scipy.misc import face
 
 class Obstacle:
-    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.04, collided = False):
+    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.052, collided = False):
         
         # Obstacle Details
         self.id = id
@@ -16,9 +17,10 @@ class Obstacle:
         y_pos = parameters[1]
         radius = parameters[2]
         velocity = parameters[3] * 5/18
-        angle = parameters[4]*np.pi/180
+        angle = parameters[4] * np.pi/180
+        acceleration = parameters[5]
 
-        self.parameters = [x_pos, y_pos, radius, velocity, angle]
+        self.parameters = [x_pos, y_pos, radius, velocity, angle, acceleration]
         self.sampling_time = sampling_time
 
         # Load Image from Path
@@ -34,10 +36,11 @@ class Obstacle:
 
         # Store History
         self.history = []
-        self.history.append([x_pos, y_pos, radius, velocity, angle])
+        self.history.append([x_pos, y_pos, radius, velocity, angle, acceleration])
 
         
     def Model(self):
+        self.parameters[3] += self.parameters[5] * self.sampling_time
         self.parameters[0] += self.parameters[3]*np.cos(self.parameters[4]) * self.sampling_time
         self.parameters[1] += self.parameters[3]*np.sin(self.parameters[4]) * self.sampling_time
         
@@ -46,8 +49,9 @@ class Obstacle:
         radius = self.parameters[2]
         velocity = self.parameters[3]
         angle = self.parameters[4]
+        acceleration = self.parameters[5]
 
-        self.history.append([x_pos, y_pos, radius, velocity, angle])
+        self.history.append([x_pos, y_pos, radius, velocity, angle, acceleration])
     
     def plot(self, ax):
         if self.image == None:
