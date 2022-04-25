@@ -2,13 +2,13 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def plot_map(ax):
-    map = plt.Rectangle((0,0), 260, 140, facecolor = "None", edgecolor = 'black')
+    map = plt.Rectangle((0,0), 260, 150, facecolor = "None", edgecolor = 'black')
     box1 = plt.Rectangle((0,0), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
     box2 = plt.Rectangle((0,50), 30, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box3 = plt.Rectangle((0,130), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box4 = plt.Rectangle((70,130), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box5 = plt.Rectangle((150,130), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box6 = plt.Rectangle((230,130), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box3 = plt.Rectangle((0,130), 30, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box4 = plt.Rectangle((70,130), 40, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box5 = plt.Rectangle((150,130), 40, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box6 = plt.Rectangle((230,130), 30, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
     box7 = plt.Rectangle((70,0), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
     box8 = plt.Rectangle((150,0), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
     box9 = plt.Rectangle((230,0), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )

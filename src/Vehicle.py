@@ -53,7 +53,7 @@ class Vehicle:
         self.goal = [x_goal, y_goal, theta_goal, delta_goal]
 
         if self.goal_list:
-            self.goal_bound =  self.size * 5
+            self.goal_bound =  self.size * 2
         else:
             self.goal_bound = self.size
         
@@ -395,7 +395,7 @@ class Vehicle:
             W_safety_VO = 100000
             W_dynamic_VO = 8000
 
-            decceleration = 5
+            decceleration = 7
 
             # Adding a Terminal Cost for the final prediction horizon
             if i == self.prediction_horizon-1:

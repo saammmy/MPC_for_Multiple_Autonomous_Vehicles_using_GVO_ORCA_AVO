@@ -6,7 +6,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from scipy.misc import face
 
 class Obstacle:
-    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.052, collided = False):
+    def __init__(self, id, obstacle_type, parameters, sampling_time, path = None, COLOR = "#c0392b", ZOOM = 0.035, collided = False):
         
         # Obstacle Details
         self.id = id

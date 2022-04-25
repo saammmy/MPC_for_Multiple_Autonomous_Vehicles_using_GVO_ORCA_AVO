@@ -67,12 +67,17 @@ if __name__== '__main__':
     #                     #  "../Object_Photos/police.png"
                         #  )
     Obstacle_1 = Obstacle(1, "Static", [130, 70, 7.5, 0.0, 0.0, 0.0], sampling_time)
-    Obstacle_2 = Obstacle(2, "Static", [210.0, 50.0, 2.0, 0.0, 0.0, 0.0], sampling_time)
+    # Obstacle_2 = Obstacle(2, "Static", [210.0, 50.0, 2.0, 0.0, 0.0, 0.0], sampling_time)
 
     # Obstacle_2 = Obstacle(1, "Static", [112.5, 22.5, 2.0, 0, 0, 0], sampling_time)
     # Obstacle_1 = Obstacle(1, "Dynamic", [20.0, 0.0, 2.5, 22, 45, 0], sampling_time, "../Object_Photos/taxi.png") 
     # Obstacle_3 = Obstacle(3, "Dynamic", [60.0, 140.0, 2.5, 0, 270, 5], sampling_time, "../Object_Photos/police.png") 
-    Obstacle_3 = Obstacle(2, "Dynamic", [40.0, 50.0, 2.5, 68, 90, 0], sampling_time, "../Object_Photos/police.png") 
+    Obstacle_3 = Obstacle(3, "Dynamic", [40.0, 50.0, 2.5, 68, 90, 0], sampling_time, "../Object_Photos/police.png") 
+    Obstacle_4 = Obstacle(4, "Dynamic", [70.0, 120.0, 2.5, 50, 180, 4], sampling_time, "../Object_Photos/taxi.png") 
+    Obstacle_5 = Obstacle(5, "Dynamic", [70.0, 100.0, 2.5, 15, 0, 3], sampling_time, "../Object_Photos/police.png")
+    Obstacle_6 = Obstacle(6, "Dynamic", [60.0, 70.0, 2.5, 45, 270, 5], sampling_time, "../Object_Photos/taxi.png")
+    Obstacle_7 = Obstacle(7, "Dynamic", [200.0, 90.0, 2.5, 9, 270, 3], sampling_time, "../Object_Photos/police.png")
+    Obstacle_8 = Obstacle(8, "Dynamic", [220.0, 50.0, 2.5, 10, 90, 3], sampling_time, "../Object_Photos/taxi.png") 
     # Obstacle_2 = Obstacle(1, "Dynamic", [170.0, 45.0, 2.0, 10, 180, 3], sampling_time, "../Object_Photos/police.png")
     # Obstacle_1 = Obstacle(1, "Dynamic", [0.0, 0.0, 2.0, 31, 45], sampling_time, "../Object_Photos/police.png")
     # Obstacle_2 = Obstacle(2, "Dynamic", [200.0, 0.0, 2.0, 30.0, 155], sampling_time, "../Object_Photos/taxi.png")                        
@@ -86,7 +91,7 @@ if __name__== '__main__':
     #         Obstacles.append(Obstacle(i+j, "Static", [i*5+50, j*5+50, 1, 0, 0], sampling_time))
 
     #Form a List (Do not forget to add Obstacles in this list)
-    Obstacles = [Obstacle_1, Obstacle_2, Obstacle_3]
+    Obstacles = [Obstacle_1, Obstacle_3, Obstacle_4, Obstacle_5, Obstacle_6, Obstacle_7, Obstacle_8]
 
     '''
     Define the Vehicle (Read Vehicle Class for Better understanding)
@@ -111,7 +116,7 @@ if __name__== '__main__':
     # (Inputs Include velocity and steering angle)
     
     Start_1 = [10.0, 110.0, 0.0, 0.0]
-    Goal_1 = [[80.0, 110.0, 0.0, 0.0], [180.0, 110.0, 0.0, 0.0], [210.0, 90.0, -90.0, 0.0], [210.0, 10.0, -90.0, 0.0]] #[90.0 ,45.0, 0.0, 0.0]
+    Goal_1 = [[75.0, 110.0, 0.0, 0.0], [185.0, 110.0, 0.0, 0.0], [210.0, 90.0, -90.0, 0.0], [210.0, 10.0, -90.0, 0.0]] #[90.0 ,45.0, 0.0, 0.0]
     inital_control_input_1 = [30.0,0.0]
 
     # Start_1 = [0.0, 200.0, 0.0, 0.0]
@@ -128,7 +133,7 @@ if __name__== '__main__':
                         start_time_1, 
                         sampling_time, 
                         prediction_horizon, 
-                        [Obstacle_1, Obstacle_2, Obstacle_3], 
+                        [Obstacle_1, Obstacle_3], 
                         [40, 80],
                         "AVO", 
                         "#f1c40f",
@@ -138,8 +143,8 @@ if __name__== '__main__':
        
     
     Start_2 = [240.0, 30, 180.0, 0.0]
-    Goal_2 = [[180.0, 30, 180.0, 0.0], [130.0, 30, 180.0, 0.0], [100.0, 50, 135.0, 0.0], [100.0, 90.0, 90.0, 0.0], [130.0, 110.0, 0.0, 0.0], [180.0, 110.0, 0.0, 0.0], [250.0, 110.0, 0.0, 0.0]] #,[45.0, 90.0, 180.0, 0.0], [0.0, 90, 180.0, 0.0]] #, [135.0, 0.0, 0.0, 0.0], [180.0, 0.0, 0.0, 0.0]] #[90.0 ,45.0, 0.0, 0.0]
-    inital_control_input_2 = [20.0,0.0]
+    Goal_2 = [[185.0, 30, 180.0, 0.0], [130.0, 30, 180.0, 0.0], [100.0, 50, 135.0, 0.0], [100.0, 90.0, 90.0, 0.0],[130.0, 110.0, 0.0, 0.0], [185.0, 110.0, 0.0, 0.0], [250.0, 110.0, 0.0, 0.0]] #  [75.0, 110.0, 135.0, 0.0], [50.0, 130.0, 135.0, 0.0], [50.0, 145.0, 90, 0.0]]
+    inital_control_input_2 = [30.0,0.0]
 
     start_time_2 = 0
 
@@ -150,56 +155,56 @@ if __name__== '__main__':
                         start_time_2, 
                         sampling_time, 
                         prediction_horizon, 
-                        [Obstacle_1, Obstacle_2, Obstacle_3], 
+                        [Obstacle_1], 
                         [40, 80],
-                        "AVO", 
+                        "VO", 
                         "red",
                         "Red",
                         "../Object_Photos/ferrari_2.png", 
-                        ZOOM=0.04)
+                        ZOOM=0.03)
 
     Start_3 = [10.0, 30, 0.0, 0.0]
-    Goal_3 = [[15.0, 30, 0.0, 0.0],[80.0, 30, 0.0, 0.0], [180.0, 30, 0.0, 0.0], [250, 30.0, 0.0, 0.0]]
+    Goal_3 = [[75.0, 30, 0.0, 0.0], [185.0, 30, 0.0, 0.0], [250, 30.0, 0.0, 0.0]]
     inital_control_input_3 = [35.0,0.0]
 
     start_time_3 = 0
 
-    Vehicle_Blue = Vehicle(3, 
+    Vehicle_Light_Blue = Vehicle(3, 
                         Start_3,Goal_3, 
                         inital_control_input_3, 
                         120.0, 10, 30,
                         start_time_3, 
                         sampling_time, 
                         prediction_horizon, 
-                        [Obstacle_1, Obstacle_2, Obstacle_3], 
+                        [Obstacle_1], 
                         [40,80],
                         "AVO",
-                        "#003b77",
-                        "Blue",
-                        "../Object_Photos/aventador_b.png", 
-                        ZOOM=0.025)
+                        "#3498db",
+                        "Light_Blue",
+                        "../Object_Photos/ferrari_3.png", 
+                        ZOOM=0.01)
 
     
-    # Start_4 = [341.42, 58.58, 135.0, 0.0]
-    # Goal_4 = [[58.58, 341.42, 135.0, 0.0]]
-    # inital_control_input_4 = [20.0,0.0]
+    Start_4 = [220.0, 140.0, 225.0, 0.0]#[210.0, 145.0, 270.0, 0.0]
+    Goal_4 = [[210.0, 130.0, 225.0, 0.0], [185.0, 110.0, 270.0, 0.0], [160.0, 90.0, -45.0, 0.0], [160.0, 50, 135.0, 0.0], [130.0, 30, 180.0, 0.0], [75.0, 30, 180.0, 0.0], [50.0, 10.0, 225.0, 0.0]]
+    inital_control_input_4 = [20.0,0.0]
 
-    # start_time_4 = 0
+    start_time_4 = 0
 
-    # Vehicle_Green = Vehicle(4, 
-    #                     Start_4,Goal_4, 
-    #                     inital_control_input_4, 
-    #                     120.0, 10, 30,
-    #                     start_time_4, 
-    #                     sampling_time, 
-    #                     prediction_horizon, 
-    #                     [], 
-    #                     [80, 120],
-    #                     "AVO",
-    #                     "#79a824",
-    #                     "Green") 
-    #                     # "../Object_Photos/aventador_g.png", 
-    #                     # ZOOM=0.025)
+    Vehicle_Green = Vehicle(4, 
+                        Start_4,Goal_4, 
+                        inital_control_input_4, 
+                        120.0, 10, 30,
+                        start_time_4, 
+                        sampling_time, 
+                        prediction_horizon, 
+                        [Obstacle_1, Obstacle_5], 
+                        [40, 80],
+                        "VO",
+                        "#79a824",
+                        "Green",
+                        "../Object_Photos/aventador_g.png", 
+                        ZOOM=0.015)
 
     # Start_5 = [400.0, 200.0, 180.0, 0.0]
     # Goal_5 = [[0.0, 200.0, 180.0, 0.0]]
@@ -286,15 +291,18 @@ if __name__== '__main__':
     #                     # ZOOM=0.025)
 
     #Form a List (Do not forget to add all Vehicles in this list)
-    Vehicles = [Vehicle_Yellow, Vehicle_Red, Vehicle_Blue] #, Vehicle_Green, Vehicle_Grey, Vehicle_Dark_Red, Vehicle_Light_Blue, Vehicle_Police] #, Vehicle_2, Vehicle_3] #, Vehicle_3, Vehicle_4]#, Vehicle_C]
+    Vehicles = [Vehicle_Yellow, Vehicle_Red, Vehicle_Light_Blue, Vehicle_Green] #, Vehicle_Green, Vehicle_Grey, Vehicle_Dark_Red, Vehicle_Light_Blue, Vehicle_Police] #, Vehicle_2, Vehicle_3] #, Vehicle_3, Vehicle_4]#, Vehicle_C]
 
     # Define Plot Limits
     fig, ax = plt.subplots()
     fig.canvas.manager.full_screen_toggle()
-    xlim = np.array([-5,270])
-    ylim = xlim * (14.5/26.9)
+    xlim = np.array([-18,278])
+    ylim = np.array([-5, 155])
+    # ylim = xlim * (14.5/26.9)
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
+
+    ws_limits = [[0,260], [0,140]]
 
     plot.plot_map(ax)
 
@@ -318,15 +326,14 @@ if __name__== '__main__':
     while(not end_loop(Vehicles)): #not end_loop(Vehicles)):
 
         for vehicle in Vehicles:
-            if vehicle.id == 3:
-                print(vehicle.local_length)
             if not in_bound_region(vehicle):
                 vehicle.optimizer()
                 vehicle.bicycle_model(vehicle.control_input[0], vehicle.control_input[1], True)
                 
         for obstacle in Obstacles:
             if obstacle.type == 'Dynamic':
-                obstacle.Model()
+                if obstacle.parameters[0] < ws_limits[0][1] and obstacle.parameters[0] > ws_limits[0][0] and obstacle.parameters[1] > ws_limits[1][0] and obstacle.parameters[1] < ws_limits[1][1]: 
+                    obstacle.Model()
 
         plot.plot_simulation(Vehicles, Obstacles, ax)
     
