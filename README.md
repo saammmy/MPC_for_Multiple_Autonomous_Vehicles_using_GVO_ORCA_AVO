@@ -22,7 +22,7 @@ scipy\
 ## CONTENTS:
 ------------------------
 The repository consists of the following files:\
--src:
+- src:
     - main.py: This is the main file that is used for simulations. Run it using the command "python main.py"\
     - config.py: Here the vehicles and obstacles are defined.\
     - Vehicle.py: This contains the Vehicle Class which helps us define a Vehicle. The class also contains the kinematic model and the MPC controller for the vehicle.\
