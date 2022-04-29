@@ -14,9 +14,13 @@ https://youtube.com/playlist?list=PLXBGAyISD6AmZxxhjcWZdMaxmb_QGNCOQ
 REQUIREMENTS:
 ------------------------
 The following Libraries are required:
+
 PIL
+
 autograd
+
 matplotlib
+
 scipy
 
 CONTENTS:
