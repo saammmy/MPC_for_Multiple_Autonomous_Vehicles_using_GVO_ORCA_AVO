@@ -23,7 +23,7 @@ CONTENTS:
 ------------------------
 The repository consists of the following files:\
 src:\
-ensp main.py: This is the main file that is used for simulations. Run it using the command "python main.py"\
+"ensp" main.py: This is the main file that is used for simulations. Run it using the command "python main.py"\
 ensp config.py: Here the vehicles and obstacles are defined.\
 ensp Vehicle.py: This contains the Vehicle Class which helps us define a Vehicle. The class also contains the kinematic model and the MPC controller for the vehicle.\
     Obstacle.py: This contains the Obstacle Class which defines the obstacles and its parameters.\
