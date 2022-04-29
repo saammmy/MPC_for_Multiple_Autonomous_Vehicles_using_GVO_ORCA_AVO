@@ -33,7 +33,7 @@ The repository consists of the following files:
     - Here the graphs for the experiments are stored. Please ensure there is a folder present to store the results.
     - Folder name should be: "Experiment_"Number"".
 
-- bject_Photos:
+- Object_Photos:
     - Here the images of the vehicles and obstacles are stored. Feel free to add more photos.
 
 Feel free to update the config.py file to create your desired simulations and suggest changes to make in order to make the code more robust.
