@@ -1,34 +1,145 @@
-EXAMPLE 2:
-    Start_A = [0.0, 0.0, 45.0, 0.0]
-    Goal_A = [20.0, 20.0, 45.0, 0.0]
-    inital_control_input_A=[2.0,0.0]
-    inital_control_input_B=[0.0,0.0]
-    # Length of the Vehicle
-        self.length = 0.1
-        self.size = 1
+Example: Big Simulation (COPY THIS TO CONFIG FILE)
+
+from Obstacle import *
+from Vehicle import *
+
+# Experiment No
+Experiment_No = 1
+# Simulation Parameters:
+sampling_time = 0.2
+prediction_horizon = 15
+
+'''
+Define the Obstacles (Read Obstacle Class for Better understanding)
+Sample:
+Obstacle_"Name" = Obstacle  (id, 
+                            "Obstacle Type",
+                            ["X Position", "Y Position", "Radius", "Velocity(Km/h)", "Angle(Deg)", Acceleration (m/s^2)], 
+                            "Sampling Time", 
+                            "Image Path",
+                            "Color of Obstacle",
+                            "Zoom for the Photo")
+'''
+
+Obstacle_1 = Obstacle(1, "Static", [130, 70, 7.5, 0.0, 0.0, 0.0], sampling_time)
+Obstacle_3 = Obstacle(3, "Dynamic", [40.0, 50.0, 2.5, 68, 90, 0], sampling_time, "../Object_Photos/police.png") 
+Obstacle_4 = Obstacle(4, "Dynamic", [70.0, 120.0, 2.5, 50, 180, 4], sampling_time, "../Object_Photos/taxi.png") 
+Obstacle_5 = Obstacle(5, "Dynamic", [70.0, 100.0, 2.5, 15, 0, 3], sampling_time, "../Object_Photos/police.png")
+Obstacle_6 = Obstacle(6, "Dynamic", [60.0, 70.0, 2.5, 45, 270, 5], sampling_time, "../Object_Photos/taxi.png")
+Obstacle_7 = Obstacle(7, "Dynamic", [200.0, 90.0, 2.5, 9, 270, 3], sampling_time, "../Object_Photos/police.png")
+Obstacle_8 = Obstacle(8, "Dynamic", [220.0, 50.0, 2.5, 10, 90, 3], sampling_time, "../Object_Photos/taxi.png") 
+
+#Form a List (Do not forget to add Obstacles in this list and also add them to the Vehicles Parameters
+Obstacles = [Obstacle_1, Obstacle_3, Obstacle_4, Obstacle_5, Obstacle_6, Obstacle_7, Obstacle_8]
+
+'''
+Define the Vehicle (Read Vehicle Class for Better understanding)
+Sample:
+Vehicle_"Name" = Vehicle("id",
+                        "Start States", 
+                        "Goal States",
+                        "Initial Control Input",
+                        "Velocity Limit(Km/h)", "Steering Rate Limit (Deg/s)", "Steering Angle Limit (Deg)",
+                        "Start Time",
+                        "Sampling Time",
+                        "Prediction Horizon",
+                        ["Obstacle 1","Obstacle 2", ... ] 
+                        ["Static Offset Region", "Dynamic Offset Region"]
+                        "Velocity Obstacle Type",
+                        "Color of Path/Vehicle"
+                        "Image Path"
+                        "Zoom for the Photo")
+'''
+# Define Start, Goal States and Control Input 
+# (States include x,y position, orientation, steering angle)
+# (Inputs Include velocity and steering angle)
+
+Start_1 = [10.0, 110.0, 0.0, 0.0]
+Goal_1 = [[75.0, 110.0, 0.0, 0.0], [185.0, 110.0, 0.0, 0.0], [210.0, 90.0, -90.0, 0.0], [210.0, 10.0, -90.0, 0.0]] #[90.0 ,45.0, 0.0, 0.0]
+inital_control_input_1 = [30.0,0.0]
+
+start_time_1 = 0
+
+start_time_1 = 0
+Vehicle_Yellow = Vehicle(1, 
+                    Start_1,Goal_1, 
+                    inital_control_input_1, 
+                    120.0, 10, 30,
+                    start_time_1, 
+                    sampling_time, 
+                    prediction_horizon, 
+                    [Obstacle_1, Obstacle_3], 
+                    [40, 80],
+                    "AVO", 
+                    "#f1c40f",
+                    "Yellow", 
+                    "../Object_Photos/aventador_y.png", 
+                    ZOOM=0.01)
     
-    OBSTACLES:
-    # Obstacles
-    self.offset = 7
-    self.dynamic_offset = 10
-    self.obstacles = [[0,10,0.5],[10,0,0.5],[10,20,0.5],[20,10,0.5],[10,10,0.5]]
-    self.dynamic_obstacles=[[5,0,0.25,90*np.pi/180,0.5],[0,5,0.25,0*np.pi/180,0.5],[0,15,0.25,0*np.pi/180,0.5],[15,20,0.4,-90*np.pi/180,0.5]]
 
-    WEIGHTS:
-    Total Cost
-    W1=1
-    W2=1
-    W3=10
-    W4=1000
-    W5=1000
-    Goal Cost:
-    W1 = 1
-    W2 = 1
-    W3 = 0
-    Constraint Cost:
-    W1 = 1
-    W2 = 1
-    W3 = 1
-    W4 = 5  
-    Rest cost weight = 1
+Start_2 = [240.0, 30, 180.0, 0.0]
+Goal_2 = [[185.0, 30, 180.0, 0.0], [130.0, 30, 180.0, 0.0], [100.0, 50, 135.0, 0.0], [100.0, 90.0, 90.0, 0.0],[130.0, 110.0, 0.0, 0.0], [185.0, 110.0, 0.0, 0.0], [250.0, 110.0, 0.0, 0.0]]
+inital_control_input_2 = [30.0,0.0]
 
+start_time_2 = 0
+
+Vehicle_Red = Vehicle(2, 
+                    Start_2,Goal_2, 
+                    inital_control_input_2, 
+                    120.0, 10, 30,
+                    start_time_2, 
+                    sampling_time, 
+                    prediction_horizon, 
+                    [Obstacle_1], 
+                    [40, 80],
+                    "VO", 
+                    "red",
+                    "Red",
+                    "../Object_Photos/ferrari_2.png", 
+                    ZOOM=0.03)
+
+Start_3 = [10.0, 30, 0.0, 0.0]
+Goal_3 = [[75.0, 30, 0.0, 0.0], [185.0, 30, 0.0, 0.0], [250, 30.0, 0.0, 0.0]]
+inital_control_input_3 = [35.0,0.0]
+
+start_time_3 = 0
+
+Vehicle_Light_Blue = Vehicle(3, 
+                    Start_3,Goal_3, 
+                    inital_control_input_3, 
+                    120.0, 10, 30,
+                    start_time_3, 
+                    sampling_time, 
+                    prediction_horizon, 
+                    [Obstacle_1], 
+                    [40,80],
+                    "AVO",
+                    "#3498db",
+                    "Light_Blue",
+                    "../Object_Photos/ferrari_3.png", 
+                    ZOOM=0.01)
+
+
+Start_4 = [220.0, 140.0, 225.0, 0.0]
+Goal_4 = [[210.0, 130.0, 225.0, 0.0], [185.0, 110.0, 270.0, 0.0], [160.0, 90.0, -45.0, 0.0], [160.0, 50, 135.0, 0.0], [130.0, 30, 180.0, 0.0], [75.0, 30, 180.0, 0.0], [50.0, 10.0, 225.0, 0.0]]
+inital_control_input_4 = [20.0,0.0]
+
+start_time_4 = 0
+
+Vehicle_Green = Vehicle(4, 
+                    Start_4,Goal_4, 
+                    inital_control_input_4, 
+                    120.0, 10, 30,
+                    start_time_4, 
+                    sampling_time, 
+                    prediction_horizon, 
+                    [Obstacle_1, Obstacle_5], 
+                    [40, 80],
+                    "VO",
+                    "#79a824",
+                    "Green",
+                    "../Object_Photos/aventador_g.png", 
+                    ZOOM=0.015)
+
+#Form a List of Vehicles (Do not forget to add all Vehicles in this list)
+Vehicles = [Vehicle_Yellow, Vehicle_Red, Vehicle_Light_Blue, Vehicle_Green]

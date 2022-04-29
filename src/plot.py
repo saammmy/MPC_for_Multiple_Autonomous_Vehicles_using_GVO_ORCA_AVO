@@ -1,40 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-def plot_map(ax):
-    map = plt.Rectangle((0,0), 260, 150, facecolor = "None", edgecolor = 'black')
-    box1 = plt.Rectangle((0,0), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box2 = plt.Rectangle((0,50), 30, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box3 = plt.Rectangle((0,130), 30, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box4 = plt.Rectangle((70,130), 40, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box5 = plt.Rectangle((150,130), 40, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box6 = plt.Rectangle((230,130), 30, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box7 = plt.Rectangle((70,0), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box8 = plt.Rectangle((150,0), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box9 = plt.Rectangle((230,0), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box10 = plt.Rectangle((230,50), 30, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box11 = plt.Rectangle((70,50), 10, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    box12 = plt.Rectangle((180,50), 10, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
-    round_about = plt.Circle((130,70), 15,facecolor = "None", edgecolor = 'black', hatch = "/" )
-
-    ax.add_artist(map)
-    ax.add_artist(box1)
-    ax.add_artist(box2)
-    ax.add_artist(box3)
-    ax.add_artist(box4)
-    ax.add_artist(box5)
-    ax.add_artist(box6)
-    ax.add_artist(box7)
-    ax.add_artist(box8)
-    ax.add_artist(box9)
-    ax.add_artist(box10)
-    ax.add_artist(box11)
-    ax.add_artist(box12)
-    ax.add_artist(round_about)
-
-    # plt.draw()
-    # plt.pause(100)
-
 def plot_simulation(Vehicles, Obstacles, ax, save = False, virtual_state_flag = True, Experiment_No = 1):
     VEHICLE_PLOT, VIRTUAL_STATE_PLOT, ARROW_PLOT, VEHICLE_PHOTO_PLOT, STATIC_REGION_PLOT, DYNAMIC_REGION_PLOT = ([] for i in range(6))
     OBSTACLE_FIG, OBSTACLE_PHOTO = ([] for i in range(2))
@@ -46,9 +12,6 @@ def plot_simulation(Vehicles, Obstacles, ax, save = False, virtual_state_flag = 
             OBSTACLE_PHOTO.append(obstacle_photo)
     
     for vehicle in Vehicles:
-        # print(virtual_state_plot)
-        # print(vehicle.id)
-        # print("-------------")
         vehicle_plot, virtual_state_plot, arrow_plot, vehicle_photo_plot, static_region_plot, dynamic_region_plot = vehicle.plot(ax, virtual_state_flag)
         VEHICLE_PLOT.append(vehicle_plot)
         VIRTUAL_STATE_PLOT.append(virtual_state_plot)
@@ -58,7 +21,7 @@ def plot_simulation(Vehicles, Obstacles, ax, save = False, virtual_state_flag = 
         DYNAMIC_REGION_PLOT.append(dynamic_region_plot)
 
     plt.draw()
-    # plt.pause(Vehicles[0].sampling_time*0.01)
+
     if save == True:
         plt.pause(5)
         plt.savefig('../Graphs/Experiment_{}/Simulation_Result.png'.format(Experiment_No), bbox_inches='tight')
@@ -143,11 +106,6 @@ def save_graph(Vehicles, Experiment_No):
         plt.axhline(y=-vehicle.max_delta*180/np.pi, color='r', linestyle='--')
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Steering_Angle.png'.format(Experiment_No,vehicle.COLOR_NAME,vehicle.COLOR_NAME), bbox_inches='tight')
 
-        # plt.figure()
-        # plt.title('Delta Residual (Degree)')
-        # plt.plot(time_history,residual_state_history[:,3]*180/np.pi)
-        # plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Delta_Residual.png'.format(Experiment_No,vehicle.COLOR_NAME,vehicle.COLOR_NAME), bbox_inches='tight')
-
         plt.figure()
         plt.suptitle('Vehicle {}'.format(vehicle.COLOR_NAME),fontweight="bold")
         plt.title("Distance To Obstacles")
@@ -170,19 +128,35 @@ def save_graph(Vehicles, Experiment_No):
         plt.axhline(y=0, color='r', linestyle='--')
         plt.savefig('../Graphs/Experiment_{}/Vehicle_{}/Vehicle_{}_Distance_To_Obstacles (m)'.format(Experiment_No,vehicle.COLOR_NAME,vehicle.COLOR_NAME), bbox_inches='tight')
         
-        # plt.figure()
-        # plt.title('X Position')
-        # plt.plot(time_history,state_history[:,0])
-        # plt.savefig('../Graphs/Experiment_1/Vehicle_{}/X_Position.png'.format(vehicle.COLOR_NAME), bbox_inches='tight')
+def plot_map(ax):
+    map = plt.Rectangle((0,0), 260, 150, facecolor = "None", edgecolor = 'black')
+    box1 = plt.Rectangle((0,0), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box2 = plt.Rectangle((0,50), 30, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box3 = plt.Rectangle((0,130), 30, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box4 = plt.Rectangle((70,130), 40, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box5 = plt.Rectangle((150,130), 40, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box6 = plt.Rectangle((230,130), 30, 20, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box7 = plt.Rectangle((70,0), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box8 = plt.Rectangle((150,0), 40, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box9 = plt.Rectangle((230,0), 30, 10, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box10 = plt.Rectangle((230,50), 30, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box11 = plt.Rectangle((70,50), 10, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    box12 = plt.Rectangle((180,50), 10, 40, facecolor = "None", edgecolor = 'black', hatch = "/" )
+    round_about = plt.Circle((130,70), 15,facecolor = "None", edgecolor = 'black', hatch = "/" )
 
-        # plt.figure()
-        # plt.title('Y Position')
-        # plt.plot(time_history,state_history[:,1])
-        # plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Y_Position.png'.format(vehicle.COLOR_NAME), bbox_inches='tight')
-
-        # plt.figure()
-        # plt.title('Theta (Degree)')
-        # plt.plot(time_history,state_history[:,2]*180/np.pi)
-        # plt.savefig('../Graphs/Experiment_1/Vehicle_{}/Theta.png'.format(vehicle.COLOR_NAME), bbox_inches='tight')
+    ax.add_artist(map)
+    ax.add_artist(box1)
+    ax.add_artist(box2)
+    ax.add_artist(box3)
+    ax.add_artist(box4)
+    ax.add_artist(box5)
+    ax.add_artist(box6)
+    ax.add_artist(box7)
+    ax.add_artist(box8)
+    ax.add_artist(box9)
+    ax.add_artist(box10)
+    ax.add_artist(box11)
+    ax.add_artist(box12)
+    ax.add_artist(round_about)
 
         
